@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ML Platform Final</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    .card { max-width: 720px; margin: 0 auto; padding: 18px; border: 1px solid #ddd; border-radius: 10px; }
+    h1 { margin-top: 0; }
+    label { display: block; margin: 12px 0 4px; font-weight: bold; }
+    input, button, textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
+    button { cursor: pointer; background: #007acc; color: #fff; border: none; margin-top: 12px; }
+    button:hover { opacity: 0.95; }
+    .output { margin-top: 16px; background: #f7f7f7; padding: 12px; border-radius: 8px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Plataforma ML - Entrega Final</h1>
+    <p>Use los botones para ejecutar la ingesta, el entrenamiento y hacer predicciones.</p>
+
+    <button id="ingestBtn">Ejecutar Ingesta</button>
+    <button id="trainBtn">Entrenar Modelo</button>
+
+    <label for="featureInput">Características JSON</label>
+    <textarea id="featureInput" rows="8">{"ads_enabled": 0}</textarea>
+    <button id="predictBtn">Predecir</button>
+
+    <div class="output" id="output"></div>
+  </div>
+
+  <script>
+    const output = document.getElementById('output');
+    const featureInput = document.getElementById('featureInput');
+
+    async function request(url, options) {
+      const res = await fetch(url, options);
+      const text = await res.text();
+      return res.ok ? JSON.parse(text) : { error: text };
+    }
+
+    document.getElementById('ingestBtn').onclick = async () => {
+      output.textContent = 'Iniciando ingesta...';
+      const result = await request('/api/ingest', { method: 'POST' });
+      output.textContent = JSON.stringify(result, null, 2);
+    };
+
+    document.getElementById('trainBtn').onclick = async () => {
+      output.textContent = 'Iniciando entrenamiento...';
+      const result = await request('/api/train', { method: 'POST' });
+      output.textContent = JSON.stringify(result, null, 2);
+    };
+
+    document.getElementById('predictBtn').onclick = async () => {
+      output.textContent = 'Solicitando predicción...';
+      const features = JSON.parse(featureInput.value);
+      const result = await request('/api/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ features })
+      });
+      output.textContent = JSON.stringify(result, null, 2);
+    };
+  </script>
+</body>
+</html>
