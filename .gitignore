@@ -1,0 +1,18 @@
+# Persistencia de datos y modelos (generados en tiempo de ejecución)
+/data/*.parquet
+/data/metrics.json
+/models/
+
+# El CSV del dataset se puede incluir o descargar vía /ingest desde Kaggle
+# Si tienes el CSV localmente: colócalo en Final/data/global_youtube_creator_data_large.csv
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment files
+.env

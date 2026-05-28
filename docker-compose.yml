@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   data-service:
     build:
@@ -10,9 +9,9 @@ services:
       - KAGGLE_DATASET=ehsanzx/youtube-1m-global-creator-analytics
       - RAW_FILENAME=global_youtube_creator_data_large.csv
     volumes:
-      - ./data:/data
+      - ./data:/data:z
     ports:
-      - 8001:8001
+      - "8001:8001"
 
   trainer-service:
     build:
@@ -24,10 +23,10 @@ services:
       - MODEL_DIR=/models
       - PREPROCESSED_FILE=/data/preprocessed.parquet
     volumes:
-      - ./data:/data
-      - ./models:/models
+      - ./data:/data:z
+      - ./models:/models:z
     ports:
-      - 8002:8002
+      - "8002:8002"
     depends_on:
       - data-service
 
@@ -39,11 +38,12 @@ services:
     environment:
       - MODEL_DIR=/models
       - METRICS_FILE=/data/metrics.json
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY:-}
     volumes:
-      - ./models:/models
-      - ./data:/data:ro
+      - ./models:/models:z
+      - ./data:/data:ro,z
     ports:
-      - 8003:8003
+      - "8003:8003"
     depends_on:
       - trainer-service
 
@@ -53,10 +53,6 @@ services:
       dockerfile: frontend/Dockerfile
     container_name: final_frontend
     ports:
-      - 3000:80
+      - "3000:80"
     depends_on:
       - api-service
-
-volumes:
-  data_volume:
-  model_volume:

@@ -1,67 +1,406 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ML Platform Final</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 24px; }
-    .card { max-width: 720px; margin: 0 auto; padding: 18px; border: 1px solid #ddd; border-radius: 10px; }
-    h1 { margin-top: 0; }
-    label { display: block; margin: 12px 0 4px; font-weight: bold; }
-    input, button, textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
-    button { cursor: pointer; background: #007acc; color: #fff; border: none; margin-top: 12px; }
-    button:hover { opacity: 0.95; }
-    .output { margin-top: 16px; background: #f7f7f7; padding: 12px; border-radius: 8px; white-space: pre-wrap; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>Plataforma ML - Entrega Final</h1>
-    <p>Use los botones para ejecutar la ingesta, el entrenamiento y hacer predicciones.</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube KNN Clustering — Plataforma ML</title>
+    <meta name="description" content="Plataforma de Machine Learning para clasificación de videos de YouTube con KNN. Permite ingestar datos, entrenar modelos y hacer predicciones." />
+    <style>
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface2: #22263a;
+        --border: #2e3250;
+        --accent: #6366f1;
+        --accent-hover: #4f52d9;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --error: #ef4444;
+        --text: #e2e8f0;
+        --text-muted: #8b95b0;
+        --radius: 12px;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 24px 16px;
+      }
+      .container { max-width: 860px; margin: 0 auto; }
+      header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #6366f1, #a78bfa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 8px;
+      }
+      header p { color: var(--text-muted); font-size: 0.95rem; }
 
-    <button id="ingestBtn">Ejecutar Ingesta</button>
-    <button id="trainBtn">Entrenar Modelo</button>
+      /* Pipeline steps */
+      .pipeline {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      .step {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        position: relative;
+      }
+      .step-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: var(--accent);
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .step h3 { font-size: 0.95rem; margin-bottom: 6px; }
+      .step p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; }
+      .step .status-dot {
+        display: inline-block;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+      .step .status-dot.ok { background: var(--success); }
+      .step .status-dot.running { background: var(--warning); animation: pulse 1s infinite; }
+      .step .status-dot.error { background: var(--error); }
+      @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+      .step-status { font-size: 0.78rem; color: var(--text-muted); }
 
-    <label for="featureInput">Características JSON</label>
-    <textarea id="featureInput" rows="8">{"ads_enabled": 0}</textarea>
-    <button id="predictBtn">Predecir</button>
+      /* Card */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      .card h2 { font-size: 1.1rem; margin-bottom: 16px; color: var(--text); }
 
-    <div class="output" id="output"></div>
-  </div>
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        width: 100%;
+        justify-content: center;
+      }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+      .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+      .btn-secondary {
+        background: var(--surface2);
+        color: var(--text);
+        border: 1px solid var(--border);
+        margin-top: 8px;
+      }
+      .btn-secondary:hover { background: var(--border); }
 
-  <script>
-    const output = document.getElementById('output');
-    const featureInput = document.getElementById('featureInput');
+      /* Form inputs */
+      label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; margin-top: 14px; }
+      input, textarea, select {
+        width: 100%;
+        padding: 10px 14px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.9rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      input:focus, textarea:focus { border-color: var(--accent); }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .tab {
+        flex: 1;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.85rem;
+        text-align: center;
+        transition: all 0.2s;
+      }
+      .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-    async function request(url, options) {
-      const res = await fetch(url, options);
-      const text = await res.text();
-      return res.ok ? JSON.parse(text) : { error: text };
-    }
+      /* Output */
+      .output-box {
+        margin-top: 20px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        min-height: 80px;
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-size: 0.82rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+      .output-box.success { border-color: var(--success); color: var(--success); }
+      .output-box.error { border-color: var(--error); color: #fc8181; }
 
-    document.getElementById('ingestBtn').onclick = async () => {
-      output.textContent = 'Iniciando ingesta...';
-      const result = await request('/api/ingest', { method: 'POST' });
-      output.textContent = JSON.stringify(result, null, 2);
-    };
+      /* Metrics */
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .metric-card {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        text-align: center;
+      }
+      .metric-value { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+      .metric-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
 
-    document.getElementById('trainBtn').onclick = async () => {
-      output.textContent = 'Iniciando entrenamiento...';
-      const result = await request('/api/train', { method: 'POST' });
-      output.textContent = JSON.stringify(result, null, 2);
-    };
+      @media (max-width: 640px) {
+        .pipeline { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🎬 YouTube KNN Classifier</h1>
+        <p>Plataforma ML — Clasificación de monetización con K-Nearest Neighbors</p>
+      </header>
 
-    document.getElementById('predictBtn').onclick = async () => {
-      output.textContent = 'Solicitando predicción...';
-      const features = JSON.parse(featureInput.value);
-      const result = await request('/api/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ features })
-      });
-      output.textContent = JSON.stringify(result, null, 2);
-    };
-  </script>
-</body>
+      <!-- Pipeline status -->
+      <div class="pipeline">
+        <div class="step" id="step1">
+          <div class="step-num">1</div>
+          <h3>Ingestión de Datos</h3>
+          <p>Carga y preprocesa el dataset CSV desde <code>/data</code> o Kaggle.</p>
+          <span class="status-dot" id="dot1"></span>
+          <span class="step-status" id="status1">Pendiente</span>
+          <br><br>
+          <button class="btn btn-primary" id="ingestBtn" onclick="runIngest()">▶ Ejecutar Ingesta</button>
+        </div>
+        <div class="step" id="step2">
+          <div class="step-num">2</div>
+          <h3>Entrenamiento KNN</h3>
+          <p>Entrena el clasificador KNN con los datos preprocesados.</p>
+          <span class="status-dot" id="dot2"></span>
+          <span class="step-status" id="status2">Pendiente</span>
+          <br><br>
+          <button class="btn btn-primary" id="trainBtn" onclick="runTrain()">▶ Entrenar Modelo</button>
+        </div>
+        <div class="step" id="step3">
+          <div class="step-num">3</div>
+          <h3>API de Predicción</h3>
+          <p>Predice si un video tendrá anuncios habilitados.</p>
+          <span class="status-dot" id="dot3"></span>
+          <span class="step-status" id="status3">Comprobando...</span>
+          <br><br>
+          <button class="btn btn-secondary" onclick="checkApiHealth()">⟳ Verificar estado</button>
+        </div>
+      </div>
+
+      <!-- Prediction card -->
+      <div class="card">
+        <h2>🔮 Predicción</h2>
+        <div class="tabs">
+          <div class="tab active" id="tabUrl" onclick="switchTab('url')">🔗 URL de YouTube</div>
+          <div class="tab" id="tabJson" onclick="switchTab('json')">📋 Features JSON</div>
+        </div>
+
+        <div id="panelUrl">
+          <label for="urlInput">URL del video de YouTube</label>
+          <input id="urlInput" type="url" placeholder="https://youtu.be/dQw4w9WgXcQ" />
+          <button class="btn btn-primary" style="margin-top:12px" onclick="predictUrl()">Predecir desde URL</button>
+        </div>
+
+        <div id="panelJson" style="display:none">
+          <label for="featureInput">Features preprocesadas (JSON)</label>
+          <textarea id="featureInput" rows="10">{
+  "duration_sec": 300.0,
+  "sentiment_score": 0.2,
+  "views_log": 10.5,
+  "likes_log": 8.3,
+  "comments_log": 5.1,
+  "shares_log": 4.0,
+  "engagement_rate_log": 0.05,
+  "category": "Gaming",
+  "language": "English",
+  "region": "US"
+}</textarea>
+          <button class="btn btn-primary" style="margin-top:12px" onclick="predictJson()">Predecir desde JSON</button>
+        </div>
+      </div>
+
+      <!-- Metrics card -->
+      <div class="card">
+        <h2>📊 Métricas del Modelo</h2>
+        <button class="btn btn-secondary" onclick="loadMetrics()">Cargar métricas</button>
+        <div id="metricsArea"></div>
+      </div>
+
+      <!-- Output -->
+      <div class="output-box" id="output">Bienvenido. Sigue los 3 pasos del pipeline para usar el clasificador.</div>
+    </div>
+
+    <script>
+      const API_BASE  = 'http://localhost:8003';
+      const DATA_BASE = 'http://localhost:8001';
+      const TRAIN_BASE = 'http://localhost:8002';
+      const output = document.getElementById('output');
+
+      function setOutput(text, type = '') {
+        output.className = 'output-box' + (type ? ` ${type}` : '');
+        output.textContent = typeof text === 'object' ? JSON.stringify(text, null, 2) : text;
+      }
+
+      function setStep(n, state, msg) {
+        const dot = document.getElementById(`dot${n}`);
+        const status = document.getElementById(`status${n}`);
+        dot.className = 'status-dot' + (state ? ` ${state}` : '');
+        status.textContent = msg;
+      }
+
+      async function apiFetch(base, path, method = 'GET', body = null) {
+        const opts = { method, headers: {} };
+        if (body) { opts.body = JSON.stringify(body); opts.headers['Content-Type'] = 'application/json'; }
+        const res = await fetch(`${base}${path}`, opts);
+        const text = await res.text();
+        try { return { ok: res.ok, status: res.status, data: JSON.parse(text) }; }
+        catch { return { ok: res.ok, status: res.status, data: text }; }
+      }
+
+      async function runIngest() {
+        setStep(1, 'running', 'Ingiriendo datos...');
+        setOutput('⏳ Iniciando ingesta de datos (puede tardar 1-2 min si descarga de Kaggle)...');
+        document.getElementById('ingestBtn').disabled = true;
+        const r = await apiFetch(DATA_BASE, '/ingest', 'POST');
+        document.getElementById('ingestBtn').disabled = false;
+        if (r.ok) {
+          setStep(1, 'ok', `✓ ${r.data.rows?.toLocaleString() ?? ''} filas ingeridas`);
+          setOutput(r.data, 'success');
+        } else {
+          setStep(1, 'error', 'Error en ingesta');
+          setOutput(r.data, 'error');
+        }
+      }
+
+      async function runTrain() {
+        setStep(2, 'running', 'Entrenando modelo...');
+        setOutput('⏳ Entrenando modelo KNN (puede tardar varios minutos según el tamaño del dataset)...');
+        document.getElementById('trainBtn').disabled = true;
+        const r = await apiFetch(TRAIN_BASE, '/train', 'POST');
+        if (r.ok && r.data.status === 'trained') {
+          setStep(2, 'ok', `✓ Accuracy ${(r.data.accuracy * 100).toFixed(1)}%`);
+          setOutput(r.data, 'success');
+          // Auto-reload del modelo en api-service
+          const rel = await apiFetch(API_BASE, '/reload', 'POST');
+          if (rel.ok && rel.data.model_loaded) {
+            setStep(3, 'ok', '✓ Modelo cargado — listo para predecir');
+          }
+        } else {
+          setStep(2, r.data?.status === 'missing_data' ? 'error' : 'error', r.data?.detail || r.data?.status || 'Error');
+          setOutput(r.data, 'error');
+        }
+        document.getElementById('trainBtn').disabled = false;
+      }
+
+      async function checkApiHealth() {
+        const r = await apiFetch(API_BASE, '/health');
+        if (r.ok) {
+          const loaded = r.data.model_loaded;
+          setStep(3, loaded ? 'ok' : 'error', loaded ? '✓ Modelo cargado' : '✗ Modelo no cargado — entrena primero');
+        } else {
+          setStep(3, 'error', 'API no responde');
+        }
+      }
+
+      function switchTab(tab) {
+        document.getElementById('tabUrl').className = 'tab' + (tab === 'url' ? ' active' : '');
+        document.getElementById('tabJson').className = 'tab' + (tab === 'json' ? ' active' : '');
+        document.getElementById('panelUrl').style.display = tab === 'url' ? '' : 'none';
+        document.getElementById('panelJson').style.display = tab === 'json' ? '' : 'none';
+      }
+
+      async function predictUrl() {
+        const url = document.getElementById('urlInput').value.trim();
+        if (!url) { setOutput('⚠ Ingresa una URL de YouTube válida.', 'error'); return; }
+        setOutput('⏳ Consultando YouTube API y prediciendo...');
+        const r = await apiFetch(API_BASE, '/predict', 'POST', { youtube_url: url });
+        if (r.ok) setOutput(r.data, 'success'); else setOutput(r.data, 'error');
+      }
+
+      async function predictJson() {
+        let features;
+        try { features = JSON.parse(document.getElementById('featureInput').value); }
+        catch { setOutput('⚠ JSON inválido. Revisa la sintaxis.', 'error'); return; }
+        setOutput('⏳ Enviando predicción...');
+        const r = await apiFetch(API_BASE, '/predict', 'POST', { features });
+        if (r.ok) setOutput(r.data, 'success'); else setOutput(r.data, 'error');
+      }
+
+      async function loadMetrics() {
+        const r = await apiFetch(API_BASE, '/metrics');
+        if (!r.ok) { setOutput(r.data, 'error'); return; }
+        const m = r.data;
+        document.getElementById('metricsArea').innerHTML = `
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-value">${(m.accuracy * 100).toFixed(1)}%</div>
+              <div class="metric-label">Accuracy</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value">${(m.f1 * 100).toFixed(1)}%</div>
+              <div class="metric-label">F1 Score</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value">${m.sample_size?.toLocaleString() ?? '—'}</div>
+              <div class="metric-label">Muestras</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value">${m.n_neighbors ?? '—'}</div>
+              <div class="metric-label">K vecinos</div>
+            </div>
+          </div>
+        `;
+        setOutput(m, 'success');
+      }
+
+      // Check API health on load
+      checkApiHealth();
+    </script>
+  </body>
 </html>
