@@ -246,4 +246,42 @@ def predict(request: PredictionRequest):
         proba = model.predict_proba(feature_row)
         response["probability_ads_enabled"] = float(proba[:, 1][0])
 
+    # Guardar predicción de forma persistente
+    try:
+        import datetime
+        predictions_log_file = Path("/data/predictions.json")
+        predictions_history = []
+        if predictions_log_file.exists() and predictions_log_file.stat().st_size > 0:
+            with predictions_log_file.open("r", encoding="utf-8") as pf:
+                predictions_history = json.load(pf)
+        
+        record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "prediction": response["prediction"],
+            "prediction_label": response["prediction_label"],
+            "source": response["source"],
+            "probability_ads_enabled": response.get("probability_ads_enabled", 1.0 if response["prediction"] == 1 else 0.0)
+        }
+        predictions_history.insert(0, record)  # Insertar al inicio para orden cronológico inverso
+        predictions_history = predictions_history[:10]  # Mantener solo las últimas 10
+        
+        with predictions_log_file.open("w", encoding="utf-8") as pf:
+            json.dump(predictions_history, pf, indent=2)
+    except Exception as e:
+        print(f"Error al guardar persistencia de predicción: {e}")
+
     return response
+
+
+@app.get("/predictions")
+def get_predictions():
+    """Retorna el historial persistente de predicciones."""
+    predictions_log_file = Path("/data/predictions.json")
+    if not predictions_log_file.exists():
+        return []
+    try:
+        with predictions_log_file.open("r", encoding="utf-8") as pf:
+            return json.load(pf)
+    except Exception:
+        return []
+

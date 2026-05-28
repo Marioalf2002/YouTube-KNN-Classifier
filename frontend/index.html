@@ -337,6 +337,31 @@
       .metric-value { font-size: 1.6rem; font-weight: 700; color: #818cf8; }
       .metric-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
 
+      /* History list */
+      .history-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+      }
+      .history-item:hover { border-color: var(--accent); }
+      .history-meta { display: flex; flex-direction: column; }
+      .history-time { font-size: 0.7rem; color: var(--text-muted); }
+      .history-source { font-size: 0.75rem; color: var(--accent); text-transform: uppercase; font-weight: bold; }
+      .history-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.75rem;
+      }
+      .history-badge.enabled { background: var(--success-bg); color: var(--success); }
+      .history-badge.disabled { background: var(--error-bg); color: var(--error); }
+
       @media (max-width: 640px) {
         .pipeline { grid-template-columns: 1fr; }
         .result-header { flex-direction: column; align-items: flex-start; }
@@ -456,6 +481,15 @@
 
       <!-- Log Output Box (Solo para feedback inmediato y logs de sistema) -->
       <div class="output-box" id="logBox" style="display:none;"></div>
+
+      <!-- Historial de Predicciones Card -->
+      <div class="card">
+        <h2>📜 Historial de Predicciones (Persistente)</h2>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 16px;">
+          Últimas predicciones almacenadas de forma persistente en <code>/data/predictions.json</code>.
+        </p>
+        <div id="historyList">Cargando historial de predicciones...</div>
+      </div>
 
       <!-- Metrics card -->
       <div class="card">
@@ -634,6 +668,9 @@
 
         // Poner el JSON completo en el contenedor ocultable
         document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        
+        // Actualizar el historial persistente en la UI
+        loadHistory();
       }
 
       function toggleRawOutput() {
@@ -693,8 +730,39 @@
         `;
       }
 
+      async function loadHistory() {
+        const r = await apiFetch(API_BASE, '/predictions');
+        const container = document.getElementById('historyList');
+        if (!r.ok || !Array.isArray(r.data)) {
+          container.innerHTML = '<span style="color:var(--error)">No se pudo cargar el historial.</span>';
+          return;
+        }
+        if (r.data.length === 0) {
+          container.innerHTML = '<span style="color:var(--text-muted)">Aún no hay predicciones registradas. Realiza una predicción para ver el historial.</span>';
+          return;
+        }
+        container.innerHTML = '';
+        r.data.forEach(item => {
+          const badgeClass = item.prediction === 1 ? 'history-badge enabled' : 'history-badge disabled';
+          const el = document.createElement('div');
+          el.className = 'history-item';
+          el.innerHTML = `
+            <div class="history-meta">
+              <span class="history-source">${item.source === 'youtube_url' ? '🔗 URL' : '📋 JSON'}</span>
+              <span class="history-time">${item.timestamp}</span>
+            </div>
+            <div>
+              <span class="${badgeClass}">${item.prediction_label} (${Math.round(item.probability_ads_enabled * 100)}%)</span>
+            </div>
+          `;
+          container.appendChild(el);
+        });
+      }
+
       // Inicialización
       checkApiHealth();
+      loadHistory();
     </script>
   </body>
 </html>
+
