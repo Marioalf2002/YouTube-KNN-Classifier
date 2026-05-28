@@ -1,5 +1,12 @@
 [
   {
+    "timestamp": "2026-05-28 22:25:55",
+    "prediction": 1,
+    "prediction_label": "Anuncios habilitados",
+    "source": "youtube_url",
+    "probability_ads_enabled": 0.6
+  },
+  {
     "timestamp": "2026-05-28 22:24:10",
     "prediction": 0,
     "prediction_label": "Anuncios deshabilitados",
