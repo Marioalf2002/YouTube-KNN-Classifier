@@ -141,7 +141,9 @@ def _fetch_youtube_raw(video_id: str, api_key: str) -> dict:
 def _build_feature_row(raw: dict) -> pd.DataFrame:
     """Construye un DataFrame con exactamente las columnas que espera el modelo."""
     df = pd.DataFrame([raw])
-    df = pd.get_dummies(df, drop_first=True)
+    # IMPORTANTE: Para una sola fila, drop_first=True borraría la única categoría existente.
+    # Se debe usar False, y luego reindex se encargará de mantener o ignorar la columna.
+    df = pd.get_dummies(df, drop_first=False)
     feature_columns = app.state.feature_columns
     # Agregar columnas faltantes con 0 (categorías no vistas en entrenamiento)
     for column in feature_columns:
@@ -223,7 +225,7 @@ def predict(request: PredictionRequest):
         source = "youtube_url"
     else:
         feature_row = pd.DataFrame([request.features or {}])
-        feature_row = pd.get_dummies(feature_row, drop_first=True)
+        feature_row = pd.get_dummies(feature_row, drop_first=False)
         for column in app.state.feature_columns:
             if column not in feature_row.columns:
                 feature_row[column] = 0
@@ -260,7 +262,9 @@ def predict(request: PredictionRequest):
             "prediction": response["prediction"],
             "prediction_label": response["prediction_label"],
             "source": response["source"],
-            "probability_ads_enabled": response.get("probability_ads_enabled", 1.0 if response["prediction"] == 1 else 0.0)
+            "probability_ads_enabled": response.get("probability_ads_enabled", 1.0 if response["prediction"] == 1 else 0.0),
+            "youtube_url": request.youtube_url,
+            "features": response["feature_row"]
         }
         predictions_history.insert(0, record)  # Insertar al inicio para orden cronológico inverso
         predictions_history = predictions_history[:10]  # Mantener solo las últimas 10

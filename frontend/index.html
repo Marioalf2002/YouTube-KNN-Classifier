@@ -742,18 +742,59 @@
           return;
         }
         container.innerHTML = '';
+        const parseLogVal = (val) => val ? Math.round(Math.expm1(val)) : 0;
+
         r.data.forEach(item => {
           const badgeClass = item.prediction === 1 ? 'history-badge enabled' : 'history-badge disabled';
           const el = document.createElement('div');
           el.className = 'history-item';
+          el.style.flexDirection = 'column';
+          el.style.alignItems = 'stretch';
+          el.style.padding = '16px';
+
+          let detailsHtml = '';
+          if (item.features) {
+             const views = parseLogVal(item.features.views_log).toLocaleString();
+             const likes = parseLogVal(item.features.likes_log).toLocaleString();
+             const m = Math.floor((item.features.duration_sec || 0) / 60);
+             const s = Math.round((item.features.duration_sec || 0) % 60);
+             const duration = m > 0 ? `${m}m ${s}s` : `${s}s`;
+             
+             let detectedCategory = 'Desconocida';
+             Object.keys(item.features).forEach(k => {
+               if (k.startsWith('category_') && item.features[k] === 1) detectedCategory = k.replace('category_', '');
+             });
+             if (item.features.category && typeof item.features.category === 'string') detectedCategory = item.features.category;
+             
+             detailsHtml = `
+               <div style="display:flex; gap: 16px; margin-top: 14px; font-size: 0.8rem; color: var(--text-muted); flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 10px 14px; border-radius: 8px;">
+                 <span style="display:flex; align-items:center; gap: 4px;">👁️ <b>${views}</b> vistas</span>
+                 <span style="display:flex; align-items:center; gap: 4px;">👍 <b>${likes}</b> likes</span>
+                 <span style="display:flex; align-items:center; gap: 4px;">⏱️ <b>${duration}</b></span>
+                 <span style="display:flex; align-items:center; gap: 4px;">📁 <b>${detectedCategory}</b></span>
+               </div>
+             `;
+          }
+          
+          let titleHtml = item.youtube_url 
+            ? `<a href="${item.youtube_url}" target="_blank" style="color: var(--text); text-decoration: none; word-break: break-all;">🔗 ${item.youtube_url}</a>`
+            : `<span style="color: var(--text);">📋 Datos JSON Manuales</span>`;
+
           el.innerHTML = `
-            <div class="history-meta">
-              <span class="history-source">${item.source === 'youtube_url' ? '🔗 URL' : '📋 JSON'}</span>
-              <span class="history-time">${item.timestamp}</span>
+            <div style="display:flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+              <div class="history-meta" style="flex: 1; min-width: 250px;">
+                <span style="font-weight: 600; margin-bottom: 6px; font-size: 0.95rem; display:block;">${titleHtml}</span>
+                <span class="history-time" style="display: flex; gap: 8px; align-items: center;">
+                  <span class="history-source">${item.source === 'youtube_url' ? 'YOUTUBE URL' : 'MANUAL JSON'}</span>
+                  <span>•</span>
+                  <span>${item.timestamp}</span>
+                </span>
+              </div>
+              <div style="flex-shrink: 0;">
+                <span class="${badgeClass}">${item.prediction_label} (${Math.round(item.probability_ads_enabled * 100)}%)</span>
+              </div>
             </div>
-            <div>
-              <span class="${badgeClass}">${item.prediction_label} (${Math.round(item.probability_ads_enabled * 100)}%)</span>
-            </div>
+            ${detailsHtml}
           `;
           container.appendChild(el);
         });

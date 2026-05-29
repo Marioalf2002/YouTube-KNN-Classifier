@@ -1,58 +1,92 @@
 [
   {
-    "timestamp": "2026-05-29 19:57:49",
+    "timestamp": "2026-05-29 20:25:34",
     "prediction": 1,
     "prediction_label": "Anuncios habilitados",
     "source": "youtube_url",
-    "probability_ads_enabled": 1.0
+    "probability_ads_enabled": 0.8,
+    "youtube_url": "https://youtu.be/9wYGsQBqe7A?si=0nqkEMfoKfx3bsYG",
+    "features": {
+      "duration_sec": 790.0,
+      "sentiment_score": 0.0,
+      "views_log": 4.574710978503383,
+      "likes_log": 2.833213344056216,
+      "comments_log": 2.0794415416798357,
+      "shares_log": 0.0,
+      "engagement_rate_log": 0.21278076427866316,
+      "category_Education": 0.0,
+      "category_Gaming": 0.0,
+      "category_Music": 0.0,
+      "category_Tech Reviews": 0.0,
+      "category_Vlogs": 0.0,
+      "language_Hindi": 0.0,
+      "language_Japanese": 0.0,
+      "language_Spanish": 0.0,
+      "language_Urdu": 0.0,
+      "region_IN": 0.0,
+      "region_PK": 0.0,
+      "region_UK": 0.0,
+      "region_US": 0.0
+    }
   },
   {
-    "timestamp": "2026-05-29 19:56:33",
+    "timestamp": "2026-05-29 20:25:21",
     "prediction": 1,
     "prediction_label": "Anuncios habilitados",
     "source": "youtube_url",
-    "probability_ads_enabled": 0.6
+    "probability_ads_enabled": 1.0,
+    "youtube_url": "https://youtu.be/WotRP3HJRkM?si=UlmKr1kN1cvrbimu",
+    "features": {
+      "duration_sec": 1175.0,
+      "sentiment_score": 0.0,
+      "views_log": 11.096561175993063,
+      "likes_log": 8.06117135969092,
+      "comments_log": 5.056245805348308,
+      "shares_log": 0.0,
+      "engagement_rate_log": 0.049177142078978026,
+      "category_Education": 0.0,
+      "category_Gaming": 0.0,
+      "category_Music": 0.0,
+      "category_Tech Reviews": 0.0,
+      "category_Vlogs": 0.0,
+      "language_Hindi": 0.0,
+      "language_Japanese": 0.0,
+      "language_Spanish": 0.0,
+      "language_Urdu": 0.0,
+      "region_IN": 0.0,
+      "region_PK": 0.0,
+      "region_UK": 0.0,
+      "region_US": 0.0
+    }
   },
   {
-    "timestamp": "2026-05-29 19:55:22",
+    "timestamp": "2026-05-29 20:25:06",
     "prediction": 1,
     "prediction_label": "Anuncios habilitados",
     "source": "youtube_url",
-    "probability_ads_enabled": 1.0
-  },
-  {
-    "timestamp": "2026-05-29 19:40:38",
-    "prediction": 1,
-    "prediction_label": "Anuncios habilitados",
-    "source": "youtube_url",
-    "probability_ads_enabled": 0.6
-  },
-  {
-    "timestamp": "2026-05-29 19:30:05",
-    "prediction": 1,
-    "prediction_label": "Anuncios habilitados",
-    "source": "youtube_url",
-    "probability_ads_enabled": 0.6
-  },
-  {
-    "timestamp": "2026-05-29 19:15:24",
-    "prediction": 1,
-    "prediction_label": "Anuncios habilitados",
-    "source": "youtube_url",
-    "probability_ads_enabled": 0.6
-  },
-  {
-    "timestamp": "2026-05-28 22:25:55",
-    "prediction": 1,
-    "prediction_label": "Anuncios habilitados",
-    "source": "youtube_url",
-    "probability_ads_enabled": 0.6
-  },
-  {
-    "timestamp": "2026-05-28 22:24:10",
-    "prediction": 0,
-    "prediction_label": "Anuncios deshabilitados",
-    "source": "features",
-    "probability_ads_enabled": 0.4
+    "probability_ads_enabled": 1.0,
+    "youtube_url": "https://youtu.be/pSkhgPM0oag?si=yQEOZ9mh1pK_PKs1",
+    "features": {
+      "duration_sec": 17.0,
+      "sentiment_score": 0.0,
+      "views_log": 0.0,
+      "likes_log": 0.0,
+      "comments_log": 0.0,
+      "shares_log": 0.0,
+      "engagement_rate_log": 0.0,
+      "category_Education": 0.0,
+      "category_Gaming": 0.0,
+      "category_Music": 0.0,
+      "category_Tech Reviews": 0.0,
+      "category_Vlogs": 0.0,
+      "language_Hindi": 0.0,
+      "language_Japanese": 0.0,
+      "language_Spanish": 0.0,
+      "language_Urdu": 0.0,
+      "region_IN": 0.0,
+      "region_PK": 0.0,
+      "region_UK": 0.0,
+      "region_US": 0.0
+    }
   }
 ]
