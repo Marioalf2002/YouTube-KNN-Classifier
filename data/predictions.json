@@ -1,5 +1,47 @@
 [
   {
+    "timestamp": "2026-05-29 19:57:49",
+    "prediction": 1,
+    "prediction_label": "Anuncios habilitados",
+    "source": "youtube_url",
+    "probability_ads_enabled": 1.0
+  },
+  {
+    "timestamp": "2026-05-29 19:56:33",
+    "prediction": 1,
+    "prediction_label": "Anuncios habilitados",
+    "source": "youtube_url",
+    "probability_ads_enabled": 0.6
+  },
+  {
+    "timestamp": "2026-05-29 19:55:22",
+    "prediction": 1,
+    "prediction_label": "Anuncios habilitados",
+    "source": "youtube_url",
+    "probability_ads_enabled": 1.0
+  },
+  {
+    "timestamp": "2026-05-29 19:40:38",
+    "prediction": 1,
+    "prediction_label": "Anuncios habilitados",
+    "source": "youtube_url",
+    "probability_ads_enabled": 0.6
+  },
+  {
+    "timestamp": "2026-05-29 19:30:05",
+    "prediction": 1,
+    "prediction_label": "Anuncios habilitados",
+    "source": "youtube_url",
+    "probability_ads_enabled": 0.6
+  },
+  {
+    "timestamp": "2026-05-29 19:15:24",
+    "prediction": 1,
+    "prediction_label": "Anuncios habilitados",
+    "source": "youtube_url",
+    "probability_ads_enabled": 0.6
+  },
+  {
     "timestamp": "2026-05-28 22:25:55",
     "prediction": 1,
     "prediction_label": "Anuncios habilitados",

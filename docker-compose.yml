@@ -22,6 +22,7 @@ services:
       - DATA_DIR=/data
       - MODEL_DIR=/models
       - PREPROCESSED_FILE=/data/preprocessed.parquet
+      - MAX_SAMPLES=${MAX_SAMPLES:-800000}
     volumes:
       - ./data:/data:z
       - ./models:/models:z
@@ -38,7 +39,7 @@ services:
     environment:
       - MODEL_DIR=/models
       - METRICS_FILE=/data/metrics.json
-      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY:-}
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY:-AIzaSyCBAiSgu2eBhQKCXCLUBvlFHEGLCwObNI0}
     volumes:
       - ./models:/models:z
       - ./data:/data:z

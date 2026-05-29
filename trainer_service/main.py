@@ -1,4 +1,6 @@
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI
+# pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import pandas as pd
@@ -23,6 +25,7 @@ PREPROCESSED_FILE = Path(os.getenv("PREPROCESSED_FILE", "/data/preprocessed.parq
 METRICS_FILE = DATA_DIR / "metrics.json"
 MODEL_FILE = MODEL_DIR / "youtube_model.joblib"
 FEATURE_COLUMNS_FILE = MODEL_DIR / "feature_columns.json"
+MAX_SAMPLES = int(os.getenv("MAX_SAMPLES", "400000"))
 
 
 @app.get("/health")
@@ -43,19 +46,21 @@ def train():
             "detail": "La columna ads_enabled no existe en los datos preprocesados.",
         }
 
-    # Submuestreo estratificado si el dataset es muy grande
-    if len(df) > 400000:
-        splitter = StratifiedShuffleSplit(n_splits=1, train_size=400000, random_state=42)
+    # Submuestreo estratificado si el dataset es muy grande o si se especifica un límite
+    if MAX_SAMPLES > 0 and len(df) > MAX_SAMPLES:
+        splitter = StratifiedShuffleSplit(n_splits=1, train_size=MAX_SAMPLES, random_state=42)
         sample_index, _ = next(splitter.split(df, df["ads_enabled"]))
         df = df.iloc[sample_index].reset_index(drop=True)
+
 
     # Separar target
     y = df["ads_enabled"]
 
-    # Excluir columnas que no son features: target y video_id si existe
+    # Excluir columnas que no son features: target y variables de alta cardinalidad (ID, fecha)
     cols_to_drop = ["ads_enabled"]
-    if "video_id" in df.columns:
-        cols_to_drop.append("video_id")
+    for col in ["video_id", "timestamp"]:
+        if col in df.columns:
+            cols_to_drop.append(col)
     X = df.drop(columns=cols_to_drop)
 
     # Codificación de variables categóricas
